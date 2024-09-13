@@ -1,0 +1,207 @@
+version: "3.8"
+
+services:
+  kafka01:
+    container_name: kafka01
+    image: confluentinc/confluent-local:7.7.0
+    # build: # build section is used to specify the configuration for building Docker images
+    #   context: docker-build # Specifies the directory containing the Dockerfile and the files needed to build the Docker image
+    ports:
+        - 29192:29192
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4
+    restart: always
+    # networks:
+      # kafka-net:
+        # ipv4_address: 10.0.0.11
+    # volumes:
+      # - ./config/kafka01/server.properties:/kafka/config/kraft/server.properties
+      #- ./data/data_kafka_01:/kafka-data/kraft-combined-logs
+      # - data_kafka_01:/kafka-data/kraft-combined-logs
+      # - data_kafka_01:/var/lib/kafka/data
+      # - ./scripts/update_run.sh:/tmp/update_run.sh
+    environment: # MUST BE ALL UPPERCASE
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka01:9093,2@kafka02:9093,3@kafka03:9093
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,JINPC_PLAINTEXT://0.0.0.0:29192
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka01:9092,JINPC_PLAINTEXT://localhost:29192
+      KAFKA_DELETE_TOPIC_ENABLE: true
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,SSL:SSL,SASL_PLAINTEXT:SASL_PLAINTEXT,SASL_SSL:SASL_SSL,JINPC_PLAINTEXT:PLAINTEXT
+      KAFKA_NUM_NETWORK_THREADS: 3
+      KAFKA_NUM_IO_THREADS: 8
+      KAFKA_SOCKET_SEND_BUFFER_BYTES: 102400
+      KAFKA_SOCKET_RECEIVE_BUFFER_BYTES: 102400
+      KAFKA_SOCKET_REQUEST_MAX_BYTES: 104857600
+      # KAFKA_LOG_DIRS: /kafka-data/kraft-combined-logs
+      KAFKA_NUM_PARTITIONS: 8
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_NUM_RECOVERY_THREADS_PER_DATA_DIR: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 300000
+      KAFKA_CONTROLLED_SHUTDOWN_ENABLE: true
+      KAFKA_OFFSETS_RETENTION_MINUTES: 10080 
+      KAFKA_REPLICA_LAG_TIME_MAX_MS: 30000
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_REST_BOOTSTRAP_SERVERS: localhost:29192
+      CLUSTER_ID: 4L6g3nShT-eMCtK--X86sw
+      # KAFKA_REST_LISTENERS not set. Setting it to default value: "http://0.0.0.0:8082"
+      # KAFKA_REST_HOST_NAME not set. Setting it to default value: "rest-proxy"
+    # command: "bash -c 'chmod +x /tmp/update_run.sh && /tmp/update_run.sh && /etc/confluent/docker/run'"
+
+  kafka02:
+    container_name: kafka02
+    image: confluentinc/confluent-local:7.7.0
+    # build: 
+    #   context: ./docker-build
+    #   dockerfile: Dockerfile
+    ports:
+        - 29292:29292
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4        
+    restart: always
+    # networks:
+      # kafka-net:
+        # ipv4_address: 10.0.0.12
+    # volumes:
+      # - ./config/kafka02/server.properties:/kafka/config/kraft/server.properties
+      #- ./data/data_kafka_02:/kafka-data/kraft-combined-logs
+      # - data_kafka_02:/kafka-data/kraft-combined-logs
+      # - data_kafka_02:/var/lib/kafka/data
+      # - ./scripts/update_run.sh:/tmp/update_run.sh
+    environment:
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 2
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka01:9093,2@kafka02:9093,3@kafka03:9093
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,JINPC_PLAINTEXT://0.0.0.0:29292
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka02:9092,JINPC_PLAINTEXT://localhost:29292
+      KAFKA_DELETE_TOPIC_ENABLE: true
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,SSL:SSL,SASL_PLAINTEXT:SASL_PLAINTEXT,SASL_SSL:SASL_SSL,JINPC_PLAINTEXT:PLAINTEXT
+      KAFKA_NUM_NETWORK_THREADS: 3
+      KAFKA_NUM_IO_THREADS: 8
+      KAFKA_SOCKET_SEND_BUFFER_BYTES: 102400
+      KAFKA_SOCKET_RECEIVE_BUFFER_BYTES: 102400
+      KAFKA_SOCKET_REQUEST_MAX_BYTES: 104857600
+      # KAFKA_LOG_DIRS: /kafka-data/kraft-combined-logs
+      KAFKA_NUM_PARTITIONS: 8
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_NUM_RECOVERY_THREADS_PER_DATA_DIR: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 300000
+      KAFKA_CONTROLLED_SHUTDOWN_ENABLE: true
+      KAFKA_OFFSETS_RETENTION_MINUTES: 10080 
+      KAFKA_REPLICA_LAG_TIME_MAX_MS: 30000
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_REST_BOOTSTRAP_SERVERS: localhost:29292
+      CLUSTER_ID: 4L6g3nShT-eMCtK--X86sw
+      # KAFKA_REST_LISTENERS not set. Setting it to default value: "http://0.0.0.0:8082"
+      # KAFKA_REST_HOST_NAME not set. Setting it to default value: "rest-proxy"
+    # command: "bash -c 'chmod +x /tmp/update_run.sh && /tmp/update_run.sh && /etc/confluent/docker/run'"
+
+  kafka03:
+    container_name: kafka03
+    image: confluentinc/confluent-local:7.7.0
+    # build: 
+    #   context: docker-build
+    ports:
+        - 29392:29392
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4
+    restart: always
+    # networks:
+      # kafka-net:
+        # ipv4_address: 10.0.0.13
+    # volumes:
+      # - ./config/kafka03/server.properties:/kafka/config/kraft/server.properties
+      #- ./data/data_kafka_03:/kafka-data/kraft-combined-logs
+      # - data_kafka_03:/kafka-data/kraft-combined-logs
+      # - data_kafka_03:/var/lib/kafka/data
+      # - ./scripts/update_run.sh:/tmp/update_run.sh
+    environment:
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 3
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka01:9093,2@kafka02:9093,3@kafka03:9093
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,JINPC_PLAINTEXT://0.0.0.0:29392
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka03:9092,JINPC_PLAINTEXT://localhost:29392
+      KAFKA_DELETE_TOPIC_ENABLE: true
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,SSL:SSL,SASL_PLAINTEXT:SASL_PLAINTEXT,SASL_SSL:SASL_SSL,JINPC_PLAINTEXT:PLAINTEXT
+      KAFKA_NUM_NETWORK_THREADS: 3
+      KAFKA_NUM_IO_THREADS: 8
+      KAFKA_SOCKET_SEND_BUFFER_BYTES: 102400
+      KAFKA_SOCKET_RECEIVE_BUFFER_BYTES: 102400
+      KAFKA_SOCKET_REQUEST_MAX_BYTES: 104857600
+      # KAFKA_LOG_DIRS: /kafka-data/kraft-combined-logs
+      KAFKA_NUM_PARTITIONS: 8
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_NUM_RECOVERY_THREADS_PER_DATA_DIR: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 300000
+      KAFKA_CONTROLLED_SHUTDOWN_ENABLE: true
+      KAFKA_OFFSETS_RETENTION_MINUTES: 10080 
+      KAFKA_REPLICA_LAG_TIME_MAX_MS: 30000
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_REST_BOOTSTRAP_SERVERS: localhost:29392
+      CLUSTER_ID: 4L6g3nShT-eMCtK--X86sw
+      # KAFKA_REST_LISTENERS not set. Setting it to default value: "http://0.0.0.0:8082"
+      # KAFKA_REST_HOST_NAME not set. Setting it to default value: "rest-proxy"
+    # command: "bash -c 'chmod +x /tmp/update_run.sh && /tmp/update_run.sh && /etc/confluent/docker/run'"
+
+  my-kafka-ui:
+    image: provectuslabs/kafka-ui
+    container_name: my-kafka-ui
+    ports:
+      - "8080:8080"
+    restart: always
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka01:9092,kafka02:9092,kafka03:9092
+    # networks:
+      # kafka-net:
+        # ipv4_address: 10.0.0.10
+        
+  kafka-kouncil:
+    image: consdata/kouncil:1.4
+    container_name: kafka-kouncil
+    ports:
+      - "8082:8080"
+    restart: always
+    environment:
+      - BOOTSTRAPSERVERS=kafka01:9092,kafka02:9092,kafka03:9092
+    # networks:
+      # kafka-net:
+        # ipv4_address: 10.0.0.9
+
+# networks:
+  # kafka-net:
+    # ipam:
+      # config:
+        # - subnet: 10.0.0.0/24
+
+volumes:
+  data_kafka_01:
+  data_kafka_02:
+  data_kafka_03:
