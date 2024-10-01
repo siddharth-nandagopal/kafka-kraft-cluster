@@ -5,10 +5,34 @@
 - UI using `kouncil` http://localhost:8082/
 
 ## create topic
+```
 ./kafka-topics.sh --create --topic user-tracking --partitions 3 --replication-factor 3 --bootstrap-server kafka01:9092
-~/bin> kafka-topics --create --topic user-tracking --partitions 3 --replication-factor 3 --bootstrap-server kafka01:9092
+```
+or
+```
+~/bin> kafka-topics --create --topic user-tracking-avro --partitions 3 --replication-factor 3 --bootstrap-server kafka01:9092
+```
 
-inside confluent-local:
+
+## Verify the topic partitions are replicated across all three brokers:
+
+```
+kafka-topics --describe --topic test --bootstrap-server kafka01:9092
+```
+
+The output of the above command will be similar to the following:
+
+```
+Topic: test     TopicId: WmMXgsr2RcyZU9ohfoTUWQ PartitionCount: 3       ReplicationFactor: 3    Configs: 
+        Topic: test     Partition: 0    Leader: 0       Replicas: 0,1,2 Isr: 0,1,2
+        Topic: test     Partition: 1    Leader: 1       Replicas: 1,2,0 Isr: 1,2,0
+        Topic: test     Partition: 2    Leader: 2       Replicas: 2,0,1 Isr: 2,0,1
+```
+
+The output above shows there are 3 in-sync replicas.
+
+
+## inside confluent-local:
 /etc/kafka/kraft/server.properties
 log.dirs=/tmp/kraft-combined-logs
 /var/lib/kafka/data/
@@ -24,10 +48,10 @@ docker-compose up -d
 Before connecting to cluster from outside docker ( ex from your docker host - your PC ), we also need to config host file:
 
 
-Example for windows:
 
+## (IP) host names and addresses for the local host 
 ```
-# C:\Windows\System32\drivers\etc\hosts
+\etc\hosts
 
 127.0.0.1 kafka01
 127.0.0.1 kafka02
@@ -41,11 +65,9 @@ Example for windows:
 > kafka01:29192,kafka02:29292,kafka03:29392
 
 
-### .NET Demo (run outside docker)
 
-[Check here](https://github.com/minhhungit/kafka-kraft-cluster-docker-compose/tree/main/client/KafkaDemo)
 
-Or run demo directly inside docker using bellow commands:
+## Or run demo directly inside docker using below commands:
 
 ```
 docker run -it --rm --network kafka-kraft-cluster-docker-compose_default confluentinc/cp-kafka /bin/kafka-console-producer --bootstrap-server kafka01:9092,kafka02:9092,kafka03:9092 --topic test_topic
@@ -56,34 +78,44 @@ then enter some text to produce message
 
 ## Performance test
 
-inside docker (container => container)
+### inside docker (container => container)
 
 ```
  docker run -it --rm --network kafka-kraft-cluster-docker-compose_default confluentinc/cp-kafka /bin/kafka-producer-perf-test --topic test_topic --num-records 1000000 --throughput -1 --producer-props bootstrap.servers=kafka01:9092,kafka02:9092,kafka03:9092 batch.size=16384 acks=1 linger.ms=50 --record-size 1000
 
 ```
 
-<img src="assets/internal-docker-exec-demo.png" style="width: 100%;" />
 
 ---
 
-outside docker (from host => container)
+### outside docker (from host => container)
+
 ```
  $ .\kafka-producer-perf-test.bat --topic test_topic --num-records 1000000 --throughput -1 --producer-props bootstrap.servers=kafka01:29192,kafka02:29292,kafka03:29392 acks=1 linger.ms=50 --record-size 1000
 ```
 
-<img src="assets/external-docker-exec-demo.png" style="width: 100%;" />
-
----
-
-<img src="assets/dotnet-app.png" style="width: 100%;" />
 
 ```
 $ .\kafka-consumer-groups.bat --bootstrap-server kafka01:29192,kafka02:29292,kafka03:29392 --group my-group1 --describe
 ```
 
 
-SAMPLE /etc/kafka/kraft/server.properties
+# Troubleshoot guide/frequent issues:
+
+### Issue:
+error "Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?"
+But otherwise Docker desktop works, and the command line is functional and one can connect to containers.
+
+#### Solution:
+```
+sudo ln -s ~/Library/Containers/com.docker.docker/Data/docker.raw.sock /var/run/docker.sock
+DOCKER_HOST=unix:///var/run/docker.sock docker ps
+```
+
+
+
+# SAMPLE /etc/kafka/kraft/server.properties
+```
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -103,6 +135,7 @@ SAMPLE /etc/kafka/kraft/server.properties
 # This configuration file is intended for use in KRaft mode, where
 # Apache ZooKeeper is not present.
 #
+
 
 ############################# Server Basics #############################
 
@@ -330,3 +363,4 @@ confluent.balancer.topic.replication.factor=1
 #confluent.telemetry.enabled=true
 #confluent.telemetry.api.key=<CLOUD_API_KEY>
 #confluent.telemetry.api.secret=<CCLOUD_API_SECRET>
+```
